@@ -234,6 +234,7 @@ export default function App() {
           placeholder="0"
           type="number"
           defaultValue="0"
+          min={0}
         />
         <Input
           isRequired
@@ -243,6 +244,7 @@ export default function App() {
           placeholder="100"
           type="number"
           defaultValue="0"
+          min={0}
         />
         <Input
           label="VAT (%)"
@@ -251,6 +253,7 @@ export default function App() {
           type="number"
           defaultValue="8"
           min={0}
+          max={100}
         />
         <Button type="submit" variant="bordered">
           Submit
