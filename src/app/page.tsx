@@ -100,7 +100,7 @@ const columns = [
 ];
 
 export default function App() {
-  const [submitted, setSubmitted] = useState<any>(null);
+  const [submitted, setSubmitted] = useState<{ [key: string]: string } | null>(null);//
   const [totalAmountBefore, setTotalAmountBefore] = useState<number | null>(
     null
   ); // Tổng tiền theo before
@@ -113,76 +113,76 @@ export default function App() {
     return value.toLocaleString("vi-VN"); // Định dạng theo quy tắc Việt Nam
   };
 
-  // Hàm tính toán tiền theo từng bậc
-  const calculateBill = (
-    usage: number
-  ): {
-    totalBefore: number;
-    totalAfter: number;
-    billDetails: BillDetail[];
-  } => {
-    let totalBefore = 0;
-    let totalAfter = 0;
-    let remainingUsage = usage;
-    const billDetails: BillDetail[] = [];
-
-    rows.forEach((row) => {
-      const count = row.count;
-      const beforePrice = row.before;
-      const afterPrice = row.after;
-
-      if (count === null) return; // Bỏ qua bậc có count là null
-
-      let beforeBillForThisLevel = 0;
-      let afterBillForThisLevel = 0;
-
-      if (remainingUsage > count) {
-        beforeBillForThisLevel = count * beforePrice;
-        afterBillForThisLevel = count * afterPrice;
-        remainingUsage -= count;
-      } else if (remainingUsage > 0) {
-        beforeBillForThisLevel = remainingUsage * beforePrice;
-        afterBillForThisLevel = remainingUsage * afterPrice;
-        remainingUsage = 0;
-      }
-
-      if (beforeBillForThisLevel > 0 || afterBillForThisLevel > 0) {
-        billDetails.push({
-          range: row.range,
-          beforeAmount: beforeBillForThisLevel,
-          afterAmount: afterBillForThisLevel,
-          formattedBeforeAmount: formatCurrency(beforeBillForThisLevel),
-          formattedAfterAmount: formatCurrency(afterBillForThisLevel),
-        });
-
-        totalBefore += beforeBillForThisLevel;
-        totalAfter += afterBillForThisLevel;
-      }
-    });
-
-    // Nếu còn điện chưa tính, sử dụng bậc cuối cùng (không có giới hạn)
-    if (remainingUsage > 0) {
-      const lastRow = rows[rows.length - 1];
-      const beforeLastLevel = remainingUsage * lastRow.before;
-      const afterLastLevel = remainingUsage * lastRow.after;
-
-      billDetails.push({
-        range: "> 401 kWh",
-        beforeAmount: beforeLastLevel,
-        afterAmount: afterLastLevel,
-        formattedBeforeAmount: formatCurrency(beforeLastLevel),
-        formattedAfterAmount: formatCurrency(afterLastLevel),
-      });
-
-      totalBefore += beforeLastLevel;
-      totalAfter += afterLastLevel;
-    }
-
-    return { totalBefore, totalAfter, billDetails };
-  };
-
   // Dùng useEffect để tính toán khi số điện thay đổi
   useEffect(() => {
+    // Hàm tính toán tiền theo từng bậc
+    const calculateBill = (
+      usage: number
+    ): {
+      totalBefore: number;
+      totalAfter: number;
+      billDetails: BillDetail[];
+    } => {
+      let totalBefore = 0;
+      let totalAfter = 0;
+      let remainingUsage = usage;
+      const billDetails: BillDetail[] = [];
+
+      rows.forEach((row) => {
+        const count = row.count;
+        const beforePrice = row.before;
+        const afterPrice = row.after;
+
+        if (count === null) return; // Bỏ qua bậc có count là null
+
+        let beforeBillForThisLevel = 0;
+        let afterBillForThisLevel = 0;
+
+        if (remainingUsage > count) {
+          beforeBillForThisLevel = count * beforePrice;
+          afterBillForThisLevel = count * afterPrice;
+          remainingUsage -= count;
+        } else if (remainingUsage > 0) {
+          beforeBillForThisLevel = remainingUsage * beforePrice;
+          afterBillForThisLevel = remainingUsage * afterPrice;
+          remainingUsage = 0;
+        }
+
+        if (beforeBillForThisLevel > 0 || afterBillForThisLevel > 0) {
+          billDetails.push({
+            range: row.range,
+            beforeAmount: beforeBillForThisLevel,
+            afterAmount: afterBillForThisLevel,
+            formattedBeforeAmount: formatCurrency(beforeBillForThisLevel),
+            formattedAfterAmount: formatCurrency(afterBillForThisLevel),
+          });
+
+          totalBefore += beforeBillForThisLevel;
+          totalAfter += afterBillForThisLevel;
+        }
+      });
+
+      // Nếu còn điện chưa tính, sử dụng bậc cuối cùng (không có giới hạn)
+      if (remainingUsage > 0) {
+        const lastRow = rows[rows.length - 1];
+        const beforeLastLevel = remainingUsage * lastRow.before;
+        const afterLastLevel = remainingUsage * lastRow.after;
+
+        billDetails.push({
+          range: "> 401 kWh",
+          beforeAmount: beforeLastLevel,
+          afterAmount: afterLastLevel,
+          formattedBeforeAmount: formatCurrency(beforeLastLevel),
+          formattedAfterAmount: formatCurrency(afterLastLevel),
+        });
+
+        totalBefore += beforeLastLevel;
+        totalAfter += afterLastLevel;
+      }
+
+      return { totalBefore, totalAfter, billDetails };
+    };
+
     if (usage !== null) {
       const { totalBefore, totalAfter, billDetails } = calculateBill(usage);
       setTotalAmountBefore(totalBefore);
